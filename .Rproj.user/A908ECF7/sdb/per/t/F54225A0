@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "rm(list=ls())\n\nlibrary(plotrix)\nlibrary(dplyr)\nlibrary(fields)\nlibrary(car)\nlibrary(reshape2)\nlibrary(plyr)\nlibrary(magrittr)\nlibrary(tidyr)\n\n#Read in ES data\ndata <- read.csv(\"cohort2_EF_data.csv\")\nstr(data)\n\n#Plots of effect sizes\n#Boxplots:\n#Is there an order effect? Boxplot depicting ES~Phase1~ across participants, boxplot depicting ES~Phase2~ across participants\n#boxplot depicting difference between ES~Phase1~ and ES~Phase2~ across participants.\nphasedata <- gather(data,Order, ES, c(ESPhase1, ESPhase2))\nhead(phasedata)\nqplot(data=phasedata, x=Order, y=ES, geom=\"boxplot\")\nboxplot(phasedata$order_effect)\n\n#Is there a condition effect? Boxplot depicting BF phase across participants, boxplot depicting TRAD phase across participants\nphasedata <- gather(data,Type, ES, c(ES_TRAD, ES_BF))\nhead(phasedata)\nqplot(data=phasedata, x=Type, y=ES, geom=\"boxplot\")\nboxplot(phasedata$BF_advantage)\n\n#########################\n#Effect size correlations\n########################\n\n#Option to run these without Madison, who is an outlier\n#hist(data$ESall)\n#data <- droplevels(data[data$ESall<20,])\n\n#Correlation between ES~All~ and age\nqplot(data=data, x=age_months, y=ESall, geom=\"point\")\ncor.test(data$age_months, data$ESall, type=\"spearman\")\n#NS\n\n#Correlation between ES~All~ and baseline accuracy (participants who start out more accurate tend to gain more)\nqplot(data=data, x=bl1_m, y=ESall, geom=\"point\")\ncor.test(data$bl1_m, data$ESall, type=\"spearman\")\n#NS\n\n#Correlation between ES~All~ and perceptual acuity?\nqplot(data=data, x=ACUITY_F_PRE, y=ESall, geom=\"point\")\ncor.test(data$ACUITY_F_PRE, data$ESall, type=\"spearman\")\n#NS\n\n#Correlation between BF_advantage and perceptual acuity?\nqplot(data=data, x=ACUITY_F_PRE, y=BF_advantage, geom=\"point\")\ncor.test(data$ACUITY_F_PRE, data$ESall, type=\"spearman\")\n#NS\n\n#Correlation between ES~All~ and duration of previous treatment?\n\n",
+    "created" : 1480823201496.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2725618680",
+    "id" : "F54225A0",
+    "lastKnownWriteTime" : 1467409244,
+    "last_content_update" : 1467409244,
+    "path" : "~/Google Drive/backup/Lab/Frontiers_Project/6_ES_plots_and_correlations.R",
+    "project_path" : "6_ES_plots_and_correlations.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

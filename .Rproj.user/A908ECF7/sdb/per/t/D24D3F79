@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "rm(list=ls()) \nlibrary(plyr)\nlibrary(modeest)\nlibrary(Hmisc)\nlibrary(data.table)\nlibrary(lme4)\n\n#Read in unmerged data\nunmergeddata <- read.csv(\"clean_data_unsummarized.csv\")\n#str(unmergeddata)\n#dim(unmergeddata)\n\n#Now fit logistic regression\n#Because we will be comparing phase 1 and phase 2, use only treatment data\ndataTX <- droplevels(unmergeddata[unmergeddata$condition!=\"PROBE\",])\n#dim(dataTX)\nlevels(dataTX$condition)\n#Code by order\ndataTX$phase <- 0\nTRAD1 <- droplevels(subset(dataTX, tx_order==\"TRAD_BF\"))\nTRAD1[which(TRAD1$condition==\"Trad\"),]$phase <- 1\nTRAD1[which(TRAD1$condition==\"BF\"),]$phase <- 2\n#head(TRAD1)\ntable(TRAD1$phase)\nBF1 <- droplevels(subset(dataTX, tx_order==\"BF_TRAD\"))\nBF1[which(BF1$condition==\"BF\"),]$phase <- 1\nBF1[which(BF1$condition==\"Trad\"),]$phase <- 2\n\nmydataTX <- rbind(TRAD1, BF1) \ntable(mydataTX$phase)\n#str(mydataTX)\n\n#This model, including an interaction between condition and raw phase order, does not converge\n#mymodfull <- glmer(response ~ condition*phase + (condition|subject) + (1|Word) + (1|userCode), data=mydataTX, family=\"binomial\")\n\n#Substitute order of treatment application for raw phase\nmymod <- glmer(response ~ condition*tx_order + (condition|subject) + (1|Word) + (1|userCode), data=mydataTX, family=\"binomial\")\n\n#Compare mymod to a model without random slope\nmymodnorandslope <- glmer(response ~ condition*tx_order + (1|subject) + (1|Word) + (1|userCode), data=mydataTX, family=\"binomial\")\nanova(mymod, mymodnorandslope)\n#Significant, use model w/ random slope\n#HEATHER: Check the above result- \n##HMC: mymod has a random slope at the subject level based on condition, while mymodnorandslope has a random effect at the subject level, \n##the significance says that including the random slope is helpful??\n\n#Compare mymod to a model with no interaction term \nmymodnoint<- glmer(response ~ condition + tx_order + (condition|subject) + (1|Word) + (1|userCode), data=mydataTX, family=\"binomial\")\nanova(mymodnorandslope, mymodnoint)  #HMC:  updated data object to \"mydataTX\", having \"dataTX\" threw an error with anova\n#Significant, include both effects and interaction\n#HEATHER: Check the above result, HMC: wouldn't we want to compare mymodnoint with mymod, the one that only differs by one parameter?\nanova(mymod, mymodnoint)  #Significant (barely), include interaction, in addition to random slope\n\nsummary(mymod)\n\n#Summarize for plotting\nsumdataTX <- dataTX %>%\n  dplyr::group_by(subject, condition, tx_order) %>%\n    dplyr::summarise(sum=sum(response), total=length(response))\n\nsumdataTX$phat <- 100*(sumdataTX$sum/sumdataTX$total)   \n\n\nhead(sumdataTX)\nsumdataTX$tx_order_plot <- mapvalues(sumdataTX$tx_order, from = c(\"BF_TRAD\", \"TRAD_BF\"), \n                          to = c(\"Biofeedback/Traditional\", \"Traditional/Biofeedback\"))\nsumdataTX$Condition <- mapvalues(sumdataTX$condition, from = c(\"BF\", \"Trad\"), \n                                     to = c(\"Biofeedback\", \"Traditional\"))\n\np1 <- qplot(x = tx_order_plot, y = phat, fill = Condition, data = sumdataTX, geom = \"boxplot\", \n            main = expression(paste(hat(p), ' Accuracy by Treatment Order and Condition')), xlab = \"Treatment Order\", ylab = expression(hat(p)))\np1\n",
+    "created" : 1480823250620.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3976681402",
+    "id" : "D24D3F79",
+    "lastKnownWriteTime" : 1467409244,
+    "last_content_update" : 1467409244,
+    "path" : "~/Google Drive/backup/Lab/Frontiers_Project/7_regression_raw_data.R",
+    "project_path" : "7_regression_raw_data.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
